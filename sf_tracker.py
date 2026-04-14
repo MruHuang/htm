@@ -253,20 +253,35 @@ def run_tracker():
     print()
 
     pw = sync_playwright().start()
-    browser = pw.chromium.launch(
-        headless=False,
-        args=["--lang=zh-TW", "--start-maximized"],
-    )
-    context = browser.new_context(
-        no_viewport=True,
-        locale="zh-TW",
-        user_agent=(
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/125.0.0.0 Safari/537.36"
-        ),
-    )
-    page = context.new_page()
+    browser = None
+    page = None
+
+    def start_browser():
+        nonlocal browser, page
+        # 關掉舊的（如果有）
+        try:
+            if browser:
+                browser.close()
+        except Exception:
+            pass
+        browser = pw.chromium.launch(
+            headless=False,
+            args=["--lang=zh-TW", "--start-maximized"],
+        )
+        context = browser.new_context(
+            no_viewport=True,
+            locale="zh-TW",
+            user_agent=(
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/125.0.0.0 Safari/537.36"
+            ),
+        )
+        page = context.new_page()
+        log("瀏覽器已啟動")
+        return page
+
+    page = start_browser()
 
     try:
         iteration = 0
@@ -288,6 +303,10 @@ def run_tracker():
                 results = do_query(page, waybills)
             except Exception as e:
                 log(f"查詢失敗: {e}")
+                # 瀏覽器可能已關閉，重新啟動
+                if "closed" in str(e).lower() or "crash" in str(e).lower():
+                    log("瀏覽器已關閉，重新啟動...")
+                    page = start_browser()
                 time.sleep(interval)
                 continue
 
@@ -321,7 +340,10 @@ def run_tracker():
             time.sleep(interval)
 
     finally:
-        browser.close()
+        try:
+            browser.close()
+        except Exception:
+            pass
         pw.stop()
 
 
