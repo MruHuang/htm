@@ -1,6 +1,10 @@
 @echo off
 title SF Express Tracker
 
+REM Disable X (close) button to prevent accidental closing
+REM Use Ctrl+C to stop the program
+powershell -Command "$w=Add-Type -MemberDefinition '[DllImport(\"user32.dll\")]public static extern IntPtr GetSystemMenu(IntPtr h,bool r);[DllImport(\"user32.dll\")]public static extern bool DeleteMenu(IntPtr h,uint p,uint f);' -Name W -Namespace W -PassThru;$h=(Get-Process -Id $PID).MainWindowHandle;$m=$w::GetSystemMenu($h,$false);$w::DeleteMenu($m,0xF060,0)" >nul 2>nul
+
 echo print(1) > "%TEMP%\sftest.py"
 set PY=
 python "%TEMP%\sftest.py" >nul 2>nul && set PY=python
@@ -18,11 +22,6 @@ if not defined PY (
 cd /d "%~dp0"
 %PY% -X utf8 sf_tracker.py
 
-:confirm_exit
 echo.
-set /p QUIT=Are you sure you want to close? (Y/N): 
-if /i "%QUIT%"=="N" goto confirm_exit
-if /i "%QUIT%"=="n" goto confirm_exit
-if /i "%QUIT%"=="Y" exit /b 0
-if /i "%QUIT%"=="y" exit /b 0
-goto confirm_exit
+echo Program stopped. Press any key to close window...
+pause >nul
