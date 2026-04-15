@@ -48,7 +48,7 @@ def now() -> str:
 
 
 def log(msg: str):
-    print(f"[{now()}] {msg}")
+    print(f"[{now()}] {msg}", flush=True)
 
 
 # ── 設定 ──────────────────────────────────────────────
@@ -242,14 +242,14 @@ def run_tracker():
         log(f"waybills.txt 是空的，請加入運單號碼: {WAYBILLS_FILE}")
         return
 
-    print("=" * 60)
-    print("  順豐快遞派送通知工具")
+    print("=" * 60, flush=True)
+    print("  順豐快遞派送通知工具", flush=True)
     print(f"  追蹤 {len(waybills)} 筆運單: {', '.join(waybills)}")
     print(f"  查詢間隔: {interval} 秒 ({interval // 60} 分鐘)")
     print(f"  只通知: 派送途中 / 已簽收")
     print()
-    print("  驗證碼自動處理，瀏覽器會自動最小化")
-    print("=" * 60)
+    print("  驗證碼自動處理，瀏覽器會自動最小化", flush=True)
+    print("=" * 60, flush=True)
     print()
 
     pw = sync_playwright().start()

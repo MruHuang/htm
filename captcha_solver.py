@@ -16,7 +16,7 @@ DEBUG_DIR = Path(__file__).parent / "tracker_data"
 
 
 def log(msg: str):
-    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}")
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}", flush=True)
 
 
 # ── 攔截 GeeTest 圖片 URL ────────────────────────────

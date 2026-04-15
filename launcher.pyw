@@ -59,7 +59,7 @@ class TrackerApp:
 
         try:
             self.process = subprocess.Popen(
-                [py, "-X", "utf8", SCRIPT],
+                [py, "-u", "-X", "utf8", SCRIPT],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 cwd=os.path.dirname(SCRIPT),
