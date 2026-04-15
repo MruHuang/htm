@@ -142,22 +142,21 @@ def check_delivery(waybill: str, bill: dict) -> bool:
     old_state = load_state(waybill)
     notified_keys = set(old_state.get("notified_times", []))
 
-    for route in route_list:
-        op_code = route.get("opCode", "")
-        scan_time = route.get("scanDateTime", "")
-        remark = route.get("remark", "")
+    # 只看最新一筆路由，最新狀態是派送中或已簽收才通知
+    if route_list:
+        latest = route_list[-1]
+        op_code = latest.get("opCode", "")
+        scan_time = latest.get("scanDateTime", "")
+        remark = latest.get("remark", "")
         unique_key = f"{op_code}_{scan_time}"
 
         if op_code in DELIVERY_OPCODES and unique_key not in notified_keys:
             send_notification(waybill, remark[:200])
             notified_keys.add(unique_key)
 
-    if is_signed or status_msg == "已簽收":
-        last_route = route_list[-1] if route_list else {}
-        last_key = f"signed_{last_route.get('scanDateTime', '')}"
-        if last_key not in notified_keys:
-            send_notification(waybill, f"[已簽收] {last_route.get('remark', '')[:180]}")
-            notified_keys.add(last_key)
+        if (is_signed or status_msg == "已簽收") and unique_key not in notified_keys:
+            send_notification(waybill, f"[已簽收] {remark[:180]}")
+            notified_keys.add(unique_key)
 
     save_state(waybill, {
         "waybill": waybill,
