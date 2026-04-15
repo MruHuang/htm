@@ -254,11 +254,22 @@ def run_tracker():
 
     pw = sync_playwright().start()
 
+    query_count = 0
+
     def one_query(waybills):
         """開瀏覽器 → 查詢 → 關瀏覽器，每次都是全新的"""
+        nonlocal query_count
+        query_count += 1
+
+        # 第一次正常顯示，第二次起移到畫面外
+        if query_count == 1:
+            args = ["--lang=zh-TW", "--start-maximized"]
+        else:
+            args = ["--lang=zh-TW", "--window-position=-9999,-9999", "--window-size=800,600"]
+
         browser = pw.chromium.launch(
             headless=False,
-            args=["--lang=zh-TW", "--start-maximized"],
+            args=args,
         )
         context = browser.new_context(
             no_viewport=True,
