@@ -38,8 +38,9 @@ BROWSER_DATA = DATA_DIR / "browser_profile"
 TRACKING_PAGE = "https://htm.sf-express.com/tw/tc/dynamic_function/waybill/"
 DEFAULT_INTERVAL = 1800
 
-# 派送中的 opCode
-DELIVERY_OPCODES = {"204", "44", "34"}
+# 需要通知的 opCode
+# 204/44/34 = 派送中, 70 = 派送不成功
+DELIVERY_OPCODES = {"204", "44", "34", "70"}
 
 
 def now() -> str:
