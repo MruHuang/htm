@@ -253,17 +253,9 @@ def run_tracker():
     print()
 
     pw = sync_playwright().start()
-    browser = None
-    page = None
 
-    def start_browser():
-        nonlocal browser, page
-        # 關掉舊的（如果有）
-        try:
-            if browser:
-                browser.close()
-        except Exception:
-            pass
+    def one_query(waybills):
+        """開瀏覽器 → 查詢 → 關瀏覽器，每次都是全新的"""
         browser = pw.chromium.launch(
             headless=False,
             args=["--lang=zh-TW", "--start-maximized"],
@@ -278,10 +270,14 @@ def run_tracker():
             ),
         )
         page = context.new_page()
-        log("瀏覽器已啟動")
-        return page
-
-    page = start_browser()
+        try:
+            results = do_query(page, waybills)
+            return results
+        finally:
+            try:
+                browser.close()
+            except Exception:
+                pass
 
     try:
         iteration = 0
@@ -300,13 +296,9 @@ def run_tracker():
             log(f"--- 第 {iteration} 次查詢 ({len(waybills)} 筆) ---")
 
             try:
-                results = do_query(page, waybills)
+                results = one_query(waybills)
             except Exception as e:
                 log(f"查詢失敗: {e}")
-                # 瀏覽器可能已關閉，重新啟動
-                if "closed" in str(e).lower() or "crash" in str(e).lower():
-                    log("瀏覽器已關閉，重新啟動...")
-                    page = start_browser()
                 time.sleep(interval)
                 continue
 
@@ -340,10 +332,6 @@ def run_tracker():
             time.sleep(interval)
 
     finally:
-        try:
-            browser.close()
-        except Exception:
-            pass
         pw.stop()
 
 
